@@ -16,10 +16,12 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /coinops ./cmd/coinops
 # Runtime stage - distroless static image for Go binaries
 FROM gcr.io/distroless/static-debian12:nonroot
 
-COPY --from=builder /coinops /coinops
-COPY config.yaml /config.yaml
+WORKDIR /app
+
+COPY --from=builder /coinops /app/coinops
+COPY --from=builder /app/config.yaml /app/config.yaml
 
 EXPOSE 3000
 
-ENTRYPOINT ["/coinops"]
-CMD ["serve", "--host", "0.0.0.0"]
+ENTRYPOINT ["/app/coinops"]
+CMD ["serve", "--host", "0.0.0.0", "--config", "/app/config.yaml"]
