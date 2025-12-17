@@ -41,6 +41,56 @@ COINOPS_SERVER_PORT=9090 ./coinops serve
 
 Open http://localhost:3000 in your browser.
 
+## Docker
+
+Build and run with Docker using the included distroless Dockerfile:
+
+```bash
+# Build the image
+docker build -t coinops .
+
+# Run in foreground (see logs)
+docker run -p 3000:3000 coinops
+
+# Run detached (background)
+docker run -d -p 3000:3000 --name coinops coinops
+```
+
+Open http://localhost:3000 in your browser.
+
+### Docker Commands
+
+```bash
+# View logs (if detached)
+docker logs coinops
+
+# Follow logs live
+docker logs -f coinops
+
+# Stop the container
+docker stop coinops
+
+# Remove the container
+docker rm coinops
+```
+
+### Docker Configuration
+
+Override settings via environment variables:
+
+```bash
+# Change the port
+docker run -p 8080:8080 -e COINOPS_SERVER_PORT=8080 coinops
+
+# Enable debug logging
+docker run -p 3000:3000 -e COINOPS_LOGGING_LEVEL=debug coinops
+
+# Use a custom config file
+docker run -p 3000:3000 -v $(pwd)/my-config.yaml:/config.yaml coinops
+```
+
+The image uses `gcr.io/distroless/static-debian12:nonroot` as the runtime base - a minimal ~2MB image with no shell, running as non-root by default.
+
 ## Configuration
 
 CoinOps uses a hierarchical configuration system via Viper. Values are read in this order of precedence (highest to lowest):
@@ -138,6 +188,7 @@ COINOPS_LOGGING_LEVEL=debug COINOPS_LOGGING_FORMAT=text ./coinops serve
 │               ├── report-success.html
 │               └── notifications.html
 ├── config.yaml               # Default configuration
+├── Dockerfile                # Distroless multi-stage build
 └── go.mod
 ```
 
