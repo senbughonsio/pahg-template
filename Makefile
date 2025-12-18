@@ -1,3 +1,82 @@
+# Help text as a multi-line variable
+define HELP_TEXT
+# CoinOps Makefile
+
+This Makefile automates common development tasks. If you're new to Make, just
+type `make` followed by a target name. For example: `make build` or `make test`.
+
+## Quick Start
+
+| Command        | What it does                                      |
+|----------------|---------------------------------------------------|
+| `make`         | Build the application (same as `make build`)      |
+| `make run`     | Build and start the server on port 3000           |
+| `make test`    | Run all tests                                     |
+| `make help`    | Show this help message                            |
+
+## All Available Commands
+
+### Building
+
+| Command              | What it does                                           |
+|----------------------|--------------------------------------------------------|
+| `make build`         | Compile the app for your current OS/architecture       |
+| `make build-release` | Same as build, but optimized (smaller binary)          |
+| `make build-linux`   | Cross-compile for Linux (x86_64/amd64)                 |
+| `make build-linux-arm64` | Cross-compile for Linux (ARM64, e.g. Raspberry Pi) |
+| `make build-all`     | Build for all supported platforms at once              |
+
+### Running & Testing
+
+| Command      | What it does                                             |
+|--------------|----------------------------------------------------------|
+| `make run`   | Build the app, then start the HTTP server                |
+| `make test`  | Run the test suite with verbose output                   |
+
+### Docker
+
+| Command            | What it does                                        |
+|--------------------|-----------------------------------------------------|
+| `make docker-build`| Build a Docker image tagged with the version        |
+
+### Code Quality
+
+| Command      | What it does                                             |
+|--------------|----------------------------------------------------------|
+| `make fmt`   | Auto-format all Go code (fixes style issues)             |
+| `make lint`  | Run the linter to check for common mistakes              |
+
+### Utilities
+
+| Command      | What it does                                             |
+|--------------|----------------------------------------------------------|
+| `make deps`  | Download and tidy Go module dependencies                 |
+| `make clean` | Delete all compiled binaries                             |
+| `make version` | Show the version, commit, and date that will be embedded |
+
+## How Versioning Works
+
+When you build, the Makefile automatically embeds version info from git:
+- **Version**: From `git describe --tags` (e.g., `v1.2.3` or `abc1234`)
+- **Commit**: The short git commit hash
+- **Commit Date**: The timestamp of that commit (for reproducible builds)
+
+You can override the version: `make build VERSION=v2.0.0`
+
+## Tips for Make Beginners
+
+- **Tab characters matter**: If you edit this file, use tabs (not spaces) for indentation
+- **Running multiple targets**: `make clean build` runs clean, then build
+- **Parallel builds**: `make -j4 build-all` runs up to 4 jobs in parallel
+- **Verbose mode**: `make --debug build` shows what Make is doing internally
+endef
+export HELP_TEXT
+
+# Show help
+.PHONY: help
+help:
+	@echo "$$HELP_TEXT"
+
 # Build variables
 BINARY_NAME=coinops
 VERSION?=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
