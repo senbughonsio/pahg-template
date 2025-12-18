@@ -40,14 +40,11 @@ version:
 	@echo "Commit: $(COMMIT)"
 	@echo "Build Date: $(BUILD_DATE)"
 
-# Build Docker image with version info
+# Build Docker image (version info auto-detected from git)
 .PHONY: docker-build
 docker-build:
-	@echo "Building Docker image with version info..."
+	@echo "Building Docker image (version auto-detected from git)..."
 	docker build \
-		--build-arg VERSION=$(VERSION) \
-		--build-arg COMMIT=$(COMMIT) \
-		--build-arg BUILD_DATE=$(BUILD_DATE) \
 		-t $(BINARY_NAME):$(VERSION) \
 		-t $(BINARY_NAME):latest \
 		.
