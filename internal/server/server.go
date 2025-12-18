@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	pmath "pahg-template/internal/math"
 	"pahg-template/internal/middleware"
 	"pahg-template/internal/notifications"
+	"pahg-template/internal/version"
 )
 
 //go:embed templates/*.html templates/partials/*.html
@@ -77,6 +79,9 @@ func (s *Server) setupRoutes() {
 	s.mux.HandleFunc("/search", s.handleSearch)
 	s.mux.HandleFunc("/generate-report", s.handleGenerateReport)
 	s.mux.HandleFunc("/notifications", s.handleNotifications)
+
+	// API endpoints
+	s.mux.HandleFunc("/metadata", s.handleMetadata)
 }
 
 // Handler returns the HTTP handler with middleware applied
@@ -93,6 +98,9 @@ type PageData struct {
 	Title             string
 	NotificationCount int
 	AvgRefreshMs      int
+	Version           string
+	Commit            string
+	CommitDate        string
 }
 
 // TickerData holds data for the full ticker table (initial load)
@@ -137,10 +145,14 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	versionInfo := version.Get()
 	data := PageData{
 		Title:             "Dashboard",
 		NotificationCount: s.notifications.Count(),
 		AvgRefreshMs:      s.cfg.Features.AvgRefreshIntervalMs,
+		Version:           versionInfo.Version,
+		Commit:            versionInfo.Commit,
+		CommitDate:        versionInfo.CommitDate,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -275,4 +287,53 @@ func (s *Server) handleNotifications(w http.ResponseWriter, r *http.Request) {
 		slog.Error("template_error", "template", "notifications.html", "error", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
+}
+
+// MetadataResponse holds the metadata endpoint response for stale tab detection
+type MetadataResponse struct {
+	Version     string                 `json:"version"`
+	Commit      string                 `json:"commit"`
+	CommitDate  string                 `json:"commit_date"`
+	Environment string                 `json:"environment"`
+	Features    map[string]interface{} `json:"features"`
+}
+
+// handleMetadata returns version, environment, and feature flags as JSON
+// Used for stale tab detection - clients poll this to detect server updates
+func (s *Server) handleMetadata(w http.ResponseWriter, r *http.Request) {
+	versionInfo := version.Get()
+
+	// Get environment from env var, default to "production"
+	environment := getEnvironment()
+
+	// Build features map from config
+	features := map[string]interface{}{
+		"avg_refresh_interval_ms": s.cfg.Features.AvgRefreshIntervalMs,
+	}
+
+	response := MetadataResponse{
+		Version:     versionInfo.Version,
+		Commit:      versionInfo.Commit,
+		CommitDate:  versionInfo.CommitDate,
+		Environment: environment,
+		Features:    features,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		slog.Error("json_encode_error", "endpoint", "/metadata", "error", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+}
+
+// getEnvironment returns the current environment name
+func getEnvironment() string {
+	env := os.Getenv("ENVIRONMENT")
+	if env == "" {
+		env = os.Getenv("ENV")
+	}
+	if env == "" {
+		env = "production"
+	}
+	return env
 }
