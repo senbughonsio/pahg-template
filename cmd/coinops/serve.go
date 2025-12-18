@@ -36,14 +36,8 @@ func runServe(cmd *cobra.Command, args []string) error {
 
 	cfg := GetConfig()
 
-	slog.Info("configuration_loaded",
-		"port", cfg.Server.Port,
-		"host", cfg.Server.Host,
-		"log_level", cfg.Logging.Level,
-		"log_format", cfg.Logging.Format,
-		"coins_count", len(cfg.Coins),
-		"avg_refresh_ms", cfg.Features.AvgRefreshIntervalMs,
-	)
+	// Log comprehensive startup diagnostics
+	LogStartupDiagnostics()
 
 	// Create server
 	srv, err := server.New(cfg)
