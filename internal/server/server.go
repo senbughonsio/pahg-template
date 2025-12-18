@@ -15,6 +15,7 @@ import (
 	pmath "pahg-template/internal/math"
 	"pahg-template/internal/middleware"
 	"pahg-template/internal/notifications"
+	"pahg-template/internal/version"
 )
 
 //go:embed templates/*.html templates/partials/*.html
@@ -77,6 +78,9 @@ func (s *Server) setupRoutes() {
 	s.mux.HandleFunc("/search", s.handleSearch)
 	s.mux.HandleFunc("/generate-report", s.handleGenerateReport)
 	s.mux.HandleFunc("/notifications", s.handleNotifications)
+
+	// API endpoints
+	s.mux.HandleFunc("/metadata", s.handleMetadata)
 }
 
 // Handler returns the HTTP handler with middleware applied
@@ -93,6 +97,9 @@ type PageData struct {
 	Title             string
 	NotificationCount int
 	AvgRefreshMs      int
+	Version           string
+	Commit            string
+	BuildDate         string
 }
 
 // TickerData holds data for the full ticker table (initial load)
@@ -137,10 +144,14 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	versionInfo := version.Get()
 	data := PageData{
 		Title:             "Dashboard",
 		NotificationCount: s.notifications.Count(),
 		AvgRefreshMs:      s.cfg.Features.AvgRefreshIntervalMs,
+		Version:           versionInfo.Version,
+		Commit:            versionInfo.Commit,
+		BuildDate:         versionInfo.BuildDate,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -273,6 +284,30 @@ func (s *Server) handleNotifications(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := s.templates.ExecuteTemplate(w, "notifications.html", data); err != nil {
 		slog.Error("template_error", "template", "notifications.html", "error", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+}
+
+// MetadataResponse holds the metadata endpoint response
+type MetadataResponse struct {
+	Version   string `json:"version"`
+	Commit    string `json:"commit"`
+	BuildDate string `json:"build_date"`
+}
+
+// handleMetadata returns version and build information as JSON
+// This endpoint will be extended in issue #8 to support stale tab detection
+func (s *Server) handleMetadata(w http.ResponseWriter, r *http.Request) {
+	versionInfo := version.Get()
+	response := MetadataResponse{
+		Version:   versionInfo.Version,
+		Commit:    versionInfo.Commit,
+		BuildDate: versionInfo.BuildDate,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		slog.Error("json_encode_error", "endpoint", "/metadata", "error", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
