@@ -1,10 +1,8 @@
 # Build stage
 FROM golang:1.23-alpine AS builder
 
-# Build arguments for version information
-ARG VERSION=dev
-ARG COMMIT=unknown
-ARG BUILD_DATE=unknown
+# Install git for version detection
+RUN apk add --no-cache git
 
 WORKDIR /app
 
@@ -12,15 +10,21 @@ WORKDIR /app
 COPY config.yaml go.mod go.sum ./
 RUN go mod download
 
-# Copy source code
+# Copy source code (including .git for version detection)
 COPY . .
 
 # Build static binary with version information
-RUN CGO_ENABLED=0 GOOS=linux go build \
+# Version info is computed from git if available, otherwise uses defaults
+# Uses git commit timestamp (not build time) for reproducible builds
+RUN VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo "dev") && \
+    COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown") && \
+    COMMIT_DATE=$(git log -1 --format=%cI 2>/dev/null || echo "unknown") && \
+    echo "Building version=${VERSION} commit=${COMMIT} commit_date=${COMMIT_DATE}" && \
+    CGO_ENABLED=0 GOOS=linux go build \
     -ldflags="-s -w \
     -X pahg-template/internal/version.Version=${VERSION} \
     -X pahg-template/internal/version.Commit=${COMMIT} \
-    -X pahg-template/internal/version.BuildDate=${BUILD_DATE}" \
+    -X pahg-template/internal/version.CommitDate=${COMMIT_DATE}" \
     -o /coinops ./cmd/coinops
 
 # Runtime stage - distroless static image for Go binaries
