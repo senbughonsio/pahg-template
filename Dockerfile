@@ -1,8 +1,19 @@
-# Build stage
-FROM golang:1.24-alpine AS builder
+# Build stage - install Go 1.25.5 manually since official images may lag
+FROM alpine:3.21 AS builder
 
-# Install git for version detection
-RUN apk add --no-cache git
+# Install build dependencies
+RUN apk add --no-cache git ca-certificates wget
+
+# Download and install Go 1.25.5
+ENV GO_VERSION=1.25.5
+ENV GOROOT=/usr/local/go
+ENV GOPATH=/go
+ENV PATH=$GOROOT/bin:$GOPATH/bin:$PATH
+
+RUN wget -q https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
+    rm go${GO_VERSION}.linux-amd64.tar.gz && \
+    go version
 
 WORKDIR /app
 
