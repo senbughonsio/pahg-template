@@ -13,12 +13,13 @@ A production-grade internal dashboard template demonstrating the PAHG stack with
 - **OOB Swaps** - Notification counter updates via `hx-swap-oob`
 - **Structured Logging** - JSON output with slog middleware for HTTP tracing
 - **Flexible Configuration** - Cobra/Viper with config file, environment variables, and flags
+- **Authentication** - Session-based login with bcrypt password hashing and auto-generated credentials
 
 ## Stack
 
 | Component | Version | Purpose |
 |-----------|---------|---------|
-| Go | 1.21+ | Backend, CLI (Cobra), config (Viper), logging (slog) |
+| Go | 1.25+ | Backend, CLI (Cobra), config (Viper), logging (slog) |
 | HTMX | 2.0.4 | HTML over the wire |
 | Alpine.js | 3.14.7 | Client-side reactivity |
 | Pico.css | 2.0.6 | Classless CSS framework |
@@ -152,6 +153,75 @@ COINOPS_SERVER_PORT=5000 ./coinops serve
 COINOPS_LOGGING_LEVEL=debug COINOPS_LOGGING_FORMAT=text ./coinops serve
 ```
 
+## Authentication
+
+CoinOps includes a complete authentication system with bcrypt password hashing and session management.
+
+### Quick Setup
+
+```bash
+# Generate credentials (creates .env file with bcrypt-hashed password)
+./coinops genenv
+
+# Start server (auto-loads .env)
+./coinops serve
+```
+
+The `genenv` command displays the plaintext password **once** - save it securely. Only the bcrypt hash is stored in `.env`.
+
+### Docker
+
+When running in Docker without credentials, the server auto-generates temporary credentials:
+
+```bash
+docker run -p 3000:3000 coinops
+```
+
+Output:
+```
+=================================================================
+  AUTO-GENERATED CREDENTIALS (no .env file or env vars found)
+=================================================================
+  Username: abc123XYZ789
+  Password: someSecurePassword24chars
+=================================================================
+  These credentials are valid for THIS SESSION ONLY.
+=================================================================
+```
+
+For persistent Docker credentials:
+
+```bash
+# Option 1: Generate locally and pass .env file
+./coinops genenv
+docker run -p 3000:3000 --env-file .env coinops
+
+# Option 2: Pass environment variables directly
+docker run -p 3000:3000 \
+  -e BASIC_AUTH_USERNAME=myuser \
+  -e BASIC_AUTH_PASSWORD_HASH='$2a$10$...' \
+  coinops
+```
+
+### Configuration
+
+Enable/disable authentication in `config.yaml`:
+
+```yaml
+security:
+  basic_auth:
+    enabled: true  # Set to false to disable authentication
+```
+
+### Security Features
+
+- **Bcrypt hashing** - Passwords hashed with cost factor 10
+- **Session cookies** - HttpOnly, SameSite=Lax, Secure on HTTPS
+- **24-hour sessions** - Auto-expiry with background cleanup
+- **Constant-time comparison** - Built into bcrypt verification
+- **Login page** - Clean UI with Pico.css and Alpine.js at `/login`
+- **Logout** - Session destruction at `/logout`
+
 ## Project Structure
 
 ```
@@ -160,7 +230,9 @@ COINOPS_LOGGING_LEVEL=debug COINOPS_LOGGING_FORMAT=text ./coinops serve
 │   └── coinops/
 │       ├── main.go           # Entrypoint
 │       ├── root.go           # Root command & Viper config setup
-│       └── serve.go          # 'serve' command implementation
+│       ├── serve.go          # 'serve' command implementation
+│       ├── genenv.go         # 'genenv' credential generator
+│       └── list.go           # 'list' command (authenticated)
 ├── internal/
 │   ├── config/
 │   │   └── config.go         # Configuration structs
@@ -172,6 +244,8 @@ COINOPS_LOGGING_LEVEL=debug COINOPS_LOGGING_FORMAT=text ./coinops serve
 │   │   └── logger.go         # slog HTTP logging middleware
 │   ├── notifications/
 │   │   └── store.go          # Thread-safe notification store
+│   ├── session/
+│   │   └── store.go          # In-memory session management
 │   └── server/
 │       ├── server.go         # HTTP handlers and routing
 │       ├── assets/           # Embedded static files
@@ -183,12 +257,13 @@ COINOPS_LOGGING_LEVEL=debug COINOPS_LOGGING_FORMAT=text ./coinops serve
 │       └── templates/        # Embedded HTML templates
 │           ├── layout.html
 │           ├── index.html
+│           ├── login.html
 │           └── partials/
 │               ├── ticker.html
 │               ├── report-success.html
 │               └── notifications.html
 ├── config.yaml               # Default configuration
-├── Dockerfile                # Distroless multi-stage build
+├── Dockerfile                # Multi-stage build with Go 1.25
 └── go.mod
 ```
 
@@ -252,7 +327,9 @@ Usage:
   coinops [command]
 
 Available Commands:
+  genenv      Generate .env file with secure credentials
   help        Help about any command
+  list        List all configured coins with current prices
   serve       Start the CoinOps dashboard server
 
 Flags:
@@ -277,4 +354,32 @@ Flags:
 
 Global Flags:
       --config string   config file (default is ./config.yaml)
+```
+
+### Genenv Command
+
+```
+Generate a .env file with bcrypt-hashed credentials for authentication.
+
+Usage:
+  coinops genenv [flags]
+
+Flags:
+  -f, --force           Overwrite existing .env file
+  -o, --output string   Output path for .env file (default ".env")
+  -h, --help            help for genenv
+```
+
+### List Command
+
+```
+List all configured coins with current prices (requires authentication).
+
+Usage:
+  coinops list [flags]
+
+Flags:
+  -u, --username string   Username for authentication (required)
+  -p, --password string   Password for authentication (required)
+  -h, --help              help for list
 ```
