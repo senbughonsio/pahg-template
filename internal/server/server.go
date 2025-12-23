@@ -101,11 +101,12 @@ func (s *Server) setupRoutes() {
 // Handler returns the HTTP handler with middleware applied
 func (s *Server) Handler() http.Handler {
 	// Chain middleware from outermost to innermost:
-	// 1. RequestID - adds unique ID to every request
-	// 2. Logging - logs all requests with timing
-	// 3. IPAllowlist - restricts by IP (if enabled)
-	// 4. SessionAuth - requires authentication via session or Basic Auth (if enabled)
-	// 5. mux - actual route handling
+	// 1. Recovery - recovers from panics and returns 500
+	// 2. RequestID - adds unique ID to every request
+	// 3. Logging - logs all requests with timing
+	// 4. IPAllowlist - restricts by IP (if enabled)
+	// 5. SessionAuth - requires authentication via session or Basic Auth (if enabled)
+	// 6. mux - actual route handling
 	var handler http.Handler = s.mux
 
 	// Apply SessionAuth (innermost security layer)
@@ -117,8 +118,11 @@ func (s *Server) Handler() http.Handler {
 	// Apply logging
 	handler = middleware.LoggingMiddleware(handler)
 
-	// Apply RequestID (outermost - runs first)
+	// Apply RequestID
 	handler = middleware.RequestIDMiddleware(handler)
+
+	// Apply Recovery (outermost - catches any panics in the chain)
+	handler = middleware.RecoveryMiddleware(handler)
 
 	return handler
 }
